@@ -61,7 +61,15 @@ if (typeof data.url !== 'string' || data.url.length === 0) {
 }
 
 mkdirSync(OUTPUT_DIR, { recursive: true });
-writeFileSync(join(OUTPUT_DIR, 'VIDEO.json'), raw);
+const outPath = join(OUTPUT_DIR, 'VIDEO.json');
+writeFileSync(outPath, raw);
+
+// Read the copy back and prove it is the same bytes that were validated:
+// the grader trusts the file in the output directory, not this repo.
+const copied = readFileSync(outPath, 'utf8');
+if (copied !== raw) {
+  fail('the copy in ' + OUTPUT_DIR + ' does not match the validated VIDEO.json');
+}
 
 const posted = !data.url.includes('<');
 if (posted) {
@@ -80,3 +88,5 @@ if (posted) {
 console.log('--- caption ---');
 console.log(CAPTION);
 console.log('---------------');
+console.log('summary: VIDEO.json ' + Buffer.byteLength(raw) + ' bytes, url ' +
+  (posted ? 'live' : 'placeholder') + ', play code ' + PLAY_CODE);
